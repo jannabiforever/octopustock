@@ -4,6 +4,8 @@ use clap::Command;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("octopustock")
         .subcommand(command::stock_command())
+        .subcommand(command::watchlist_command())
+        .subcommand(command::portfolio_command())
         .get_matches();
 
     match matches.subcommand_matches("stock") {
