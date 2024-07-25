@@ -11,7 +11,7 @@ pub fn watchlist_command() -> Command {
         .about("Manage watchlist")
         .subcommand(
             Command::new("add")
-                .about("Add a stock to the watchlist")
+                .about("add a stock to the watchlist")
                 .arg(Arg::new("symbol").required(true).long("symbol").short('s')),
         )
         .subcommand(
@@ -26,8 +26,8 @@ pub fn portfolio_command() -> Command {
     Command::new("portfolio")
         .about("Manage portfolio")
         .subcommand(
-            Command::new("add")
-                .about("Add a stock to the portfolio")
+            Command::new("set")
+                .about("set a stock to the portfolio")
                 .arg(Arg::new("symbol").required(true).long("symbol").short('s'))
                 .arg(
                     Arg::new("quantity")
@@ -58,9 +58,9 @@ mod tests {
 
     #[test]
     fn test_watchlist_command() {
-        let add =
+        let set =
             watchlist_command().get_matches_from(vec!["watchlist", "add", "--symbol", "AAPL"]);
-        let symbol = add
+        let symbol = set
             .subcommand_matches("add")
             .unwrap()
             .get_one::<String>("symbol")
@@ -83,28 +83,30 @@ mod tests {
 
     #[test]
     fn test_portfolio_command() {
-        let add = portfolio_command().get_matches_from(vec![
+        let set = portfolio_command().get_matches_from(vec![
             "portfolio",
-            "add",
+            "set",
             "--symbol",
             "AAPL",
             "--quantity",
             "10",
         ]);
-        let symbol = add
-            .subcommand_matches("add")
+        let symbol = set
+            .subcommand_matches("set")
             .unwrap()
             .get_one::<String>("symbol")
             .unwrap();
-        let quantity = add
-            .subcommand_matches("add")
+        let quantity = set
+            .subcommand_matches("set")
             .unwrap()
             .get_one::<usize>("quantity")
             .unwrap();
+
         assert_eq!(symbol, "AAPL");
         assert_eq!(*quantity, 10);
 
-        let remove = portfolio_command().get_matches_from(vec!["portfolio", "remove", "--symbol", "AAPL"]);
+        let remove =
+            portfolio_command().get_matches_from(vec!["portfolio", "remove", "--symbol", "AAPL"]);
         let symbol = remove
             .subcommand_matches("remove")
             .unwrap()
