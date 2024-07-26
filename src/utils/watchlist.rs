@@ -1,29 +1,31 @@
+use std::collections::HashSet;
 use std::io::Write;
 use std::path::PathBuf;
 
 pub struct Watchlist {
-    pub stocks: Vec<String>,
+    pub stocks: HashSet<String>,
 }
 
 impl Watchlist {
-    pub fn new(path: PathBuf) -> Self {
+    pub fn new(path: impl Into<PathBuf>) -> Self {
         if let Ok(watchlist) = Self::try_load(path) {
             watchlist
         } else {
-            Self { stocks: vec![] }
+            Self {
+                stocks: HashSet::new(),
+            }
         }
     }
 
-    fn try_load(path: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
-        let mut rdr = std::fs::File::open(path)?;
-        let stocks: Vec<String> = serde_json::from_reader(&mut rdr)?;
+    fn try_load(path: impl Into<PathBuf>) -> Result<Self, Box<dyn std::error::Error>> {
+        let file = std::fs::File::open(path.into())?;
+        let stocks: HashSet<String> = serde_json::from_reader(file)?;
 
         Ok(Self { stocks })
     }
 
-    pub fn save(&self, path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        let mut wtr =
-            std::fs::File::open(&path).unwrap_or_else(|_| std::fs::File::create(&path).unwrap());
+    pub fn save(&self, path: impl Into<PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
+        let mut wtr = std::fs::File::create(path.into())?;
 
         let json = serde_json::to_string(&self.stocks)?;
         wtr.write_all(json.as_bytes())?;
@@ -31,12 +33,12 @@ impl Watchlist {
         Ok(())
     }
 
-    pub fn add(&mut self, symbol: String) {
-        self.stocks.push(symbol);
+    pub fn add(&mut self, symbol: impl Into<String>) {
+        self.stocks.insert(symbol.into());
     }
 
-    pub fn remove(&mut self, symbol: &str) {
-        self.stocks.retain(|s| s != symbol);
+    pub fn remove(&mut self, symbol: impl Into<String>) {
+        self.stocks.remove(&symbol.into());
     }
 }
 
@@ -53,10 +55,10 @@ mod tests {
         let mut watchlist = Watchlist::new(path.clone());
         assert_eq!(watchlist.stocks.len(), 0);
 
-        watchlist.add("AAPL".to_string());
+        watchlist.add("AAPL");
         assert_eq!(watchlist.stocks.len(), 1);
 
-        watchlist.add("GOOGL".to_string());
+        watchlist.add("GOOGL");
         assert_eq!(watchlist.stocks.len(), 2);
 
         watchlist.remove("AAPL");

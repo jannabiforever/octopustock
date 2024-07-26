@@ -43,6 +43,7 @@ pub fn portfolio_command() -> Command {
                 .arg(Arg::new("symbol").required(true).long("symbol").short('s')),
         )
         .subcommand(Command::new("list").about("List all stocks in the portfolio"))
+        .subcommand(Command::new("value").about("Get the total value of the portfolio"))
 }
 
 #[cfg(test)]
